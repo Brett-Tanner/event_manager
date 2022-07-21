@@ -19,19 +19,15 @@ require 'csv'
 contents = CSV.open("event_attendees.csv", headers: true, header_converters: :symbol)
 # contents.each {|attendee| puts attendee[2]}
 
+def clean_zipcode(zipcode)
+    zipcode = zipcode.to_s.dup.rjust(5, "0")[0..4]
+end
+
 contents.each do |attendee|
     name = attendee[:first_name]
     zipcode = attendee[:zipcode]
     
-    if zipcode == nil
-        zipcode = "00000"
-    end
-    while zipcode.length > 5
-        zipcode = zipcode.chop
-    end
-    while zipcode.length < 5
-        zipcode = zipcode.insert(0, "0")
-    end
+    zipcode = clean_zipcode(zipcode)
    
     puts "#{name}: #{zipcode}"
 end
