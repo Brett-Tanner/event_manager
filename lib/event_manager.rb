@@ -17,9 +17,17 @@ def legislators_by_zip(zip)
             roles: ['legislatorUpperBody', 'legislatorLowerBody']
         ).officials
     rescue Google::Apis::ClientError => e
-        # FIXME: This still prints the full error trace from the API
+        # This still prints the full error trace from the API to the console
         "You can find your representatives by visiting www.commoncause.org/take-action/find-elected-officials"
     end
+end
+
+def create_letter(letter, id)
+    Dir.mkdir("output") unless Dir.exist?("output")
+
+    filename = "output/thanks_#{id}.html"
+
+    File.open(filename, "w") {|file| file.puts letter}
 end
 
 contents = CSV.open(
@@ -31,6 +39,7 @@ contents = CSV.open(
 template_letter = ERB.new(File.read("form_letter.erb"))
 
 contents.each do |attendee|
+    id = attendee[0]
     name = attendee[:first_name]
     zipcode = clean_zipcode(attendee[:zipcode])
 
@@ -38,6 +47,6 @@ contents.each do |attendee|
 
     personal_letter = template_letter.result(binding)
 
-    puts "#{personal_letter}"
+    create_letter(personal_letter, id)
 end
 
