@@ -30,6 +30,24 @@ def create_letter(letter, id)
     File.open(filename, "w") {|file| file.puts letter}
 end
 
+def clean_phone(number)
+    number = number.tr("^0-9", "")
+    case number.length
+    when 0..9
+        number = "Your number is too short"
+    when 11
+        if number.start_with?("1")
+            number = number[1..9]
+        else
+            number = "11 digit numbers must start with '1'"
+        end
+    when (11..)
+        number = "Your number is too long"
+    else
+        number
+    end
+end
+
 contents = CSV.open(
     "event_attendees.csv", 
     headers: true, 
@@ -42,6 +60,7 @@ contents.each do |attendee|
     id = attendee[0]
     name = attendee[:first_name]
     zipcode = clean_zipcode(attendee[:zipcode])
+    phone_number = clean_phone(attendee[:homephone])
 
     legislators = legislators_by_zip(zipcode)
 
