@@ -48,6 +48,22 @@ def clean_phone(number)
     end
 end
 
+def time?(registration_date)
+    time = Time.strptime(registration_date, "%m/%e/%y %k:%M")
+end
+
+def print_reg_times(reg_times)
+    sorted_times = reg_times.sort_by(&:last).reverse
+    time_sentences = sorted_times.map do |array| 
+        if array[1] == 1
+            "#{array[1]} person signed up at #{array[0]}:00."
+        else
+            "#{array[1]} people signed up at #{array[0]}:00."
+        end
+    end
+    puts "#{time_sentences.join("\n")}"
+end
+
 contents = CSV.open(
     "event_attendees.csv", 
     headers: true, 
@@ -56,11 +72,19 @@ contents = CSV.open(
 
 template_letter = ERB.new(File.read("form_letter.erb"))
 
+# store the frequency of registration for each time
+reg_times = Hash.new(0)
+
 contents.each do |attendee|
+    # info for letter
     id = attendee[0]
     name = attendee[:first_name]
     zipcode = clean_zipcode(attendee[:zipcode])
+
     phone_number = clean_phone(attendee[:homephone])
+
+    reg_datetime = time?(attendee[:regdate])
+    reg_times[reg_datetime.hour] += 1
 
     legislators = legislators_by_zip(zipcode)
 
@@ -69,3 +93,4 @@ contents.each do |attendee|
     create_letter(personal_letter, id)
 end
 
+print_reg_times(reg_times)
